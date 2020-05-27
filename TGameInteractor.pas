@@ -87,7 +87,7 @@ begin
   if IsItFree(To_v) then
   begin
     if (abs(nX) = 1) and (oY = 1) then CanMoveThere := -1
-    else if (abs(nX) = 2) and (oY = 2) then
+    else if (abs(nX) = 2) and (abs(nY) = 2) then
     begin
       MiddlePos := To_v.GetCellPos.Sum(Vector2.Create(nX div 2, nY div 2));
       Middle := self.Board.GetCell(MiddlePos);
