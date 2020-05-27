@@ -25,7 +25,7 @@ begin
   Application.Initialize;
   Application.CreateForm(TForm1, Form1);
   GameBoard := Board.Create(ResourceLoader);
-  self.Interactor := GameInteractor.Create(GameBoard);
+  self.Interactor := GameInteractor.Create(GameBoard, ResourceLoader);
   Form1.OnEvent := Interactor.HandleTheClick;
   Form1.OnShow := Custom;
 end;

@@ -81,6 +81,7 @@ begin
   self.AmIDead := true;
   self.Graphics.OnClick := nil;
   self.Graphics.Visible := false;
+  self.Graphics.Enabled := false;
   self.Pos := nil;
 end;
 

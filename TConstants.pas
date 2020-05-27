@@ -6,6 +6,7 @@ const
   CPicsPath = './pics/';
   CFileExt = '.bmp';
   CBoard_BoardPath = CPicsPath + 'Field' + CFileExt;
+  CBoard_SelectedPath = CPicsPath + 'SelectedCell' + CFileExt;
   CBoard_WhiteCheckPath = CPicsPath + 'BMen' + CFileExt;
   CBoard_BlackCheckPath = CPicsPath + 'WMen' + CFileExt;
   CBoard_WhiteKingPath = CPicsPath + 'BKing' + CFileExt;
