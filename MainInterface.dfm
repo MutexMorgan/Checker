@@ -1,9 +1,10 @@
 object Form1: TForm1
-  Left = 386
-  Top = 71
-  Width = 528
-  Height = 615
-  Caption = 'Form1'
+  Left = 155
+  Top = 144
+  Width = 600
+  Height = 539
+  AutoSize = True
+  Caption = #1064#1072#1096#1082#1080
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText
@@ -11,14 +12,7 @@ object Form1: TForm1
   Font.Name = 'Tahoma'
   Font.Style = []
   OldCreateOrder = False
-  PixelsPerInch = 100
+  OnClick = GamePanelClik
+  PixelsPerInch = 96
   TextHeight = 13
-  object GamePanel: TPanel
-    Left = 0
-    Top = 0
-    Width = 512
-    Height = 512
-    TabOrder = 0
-    OnClick = GamePanelClick
-  end
 end
