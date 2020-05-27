@@ -103,7 +103,7 @@ begin
     begin
       MiddlePos := To_v.GetCellPos.Sum(Vector2.Create(nX div 2, nY div 2));
       Middle := self.Board.GetCell(MiddlePos);
-      if not IsItFree(Middle) and self.Board.GetChecker(Middle).IsWhite <> Checker.IsWhite then
+      if (not IsItFree(Middle)) and (self.Board.GetChecker(Middle).IsWhite <> Checker.IsWhite) then
       begin
         CanMoveThere := MiddlePos.GetY * CCellAmount + MiddlePos.GetX;
       end;
@@ -115,7 +115,7 @@ function GameInteractor.IsItFree(Cell: BoardCell): Boolean;
 var i: Integer;
 begin
   for i := 0 to CCheckerAmount - 1 do
-    if (not self.Board.Checkers[i].IsDead) and (self.Board.Checkers[i].GetCell = Cell) then
+    if self.Board.Checkers[i].GetCell = Cell then
     begin
       IsItFree := false;
       exit;
