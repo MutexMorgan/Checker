@@ -5,6 +5,11 @@ interface
 uses Math, TChecker, TConstants, ExtCtrls, TGraphicsLoader, TBoard, TBoardCell, TVector2, Controls, MainInterface;
 
 type
+  MoveInfo = record
+    CanMove: Boolean;
+    CanEat: Boolean;
+    WhoToEat: array of Checker;
+  end;
   //Объявление класса взаимодействия с игрой
   GameInteractor = class
   private
@@ -23,7 +28,7 @@ type
     procedure HandleEmptyCell(Cell: BoardCell);
     function IsItFree(Cell: BoardCell): Boolean;
     //Функция проверки способности шашки походить возвращая код статуса
-    function CanMoveThere(Checker: Checker; To_v: BoardCell): Integer;
+    function CanMoveThere(Who: Checker; To_v: BoardCell): MoveInfo;
   public
     //Конструктор класса
     constructor Create(Board: Board; GphcsLdr: GraphicsLoader);
@@ -89,26 +94,42 @@ begin
   self.SelectedGraphics.Left := self.SelectedChecker.GetCell.GetPos.GetX;
 end;
 
-function GameInteractor.CanMoveThere(Checker: Checker; To_v: BoardCell): Integer;
-var nX, nY, oY: Integer; MiddlePos: Vector2; Middle: BoardCell;
+function GameInteractor.CanMoveThere(Who: Checker; To_v: BoardCell): MoveInfo;
+var nX, nY, oY, i: Integer; MiddlePos: Vector2; Middle: BoardCell; Occupant: Checker; Res: MoveInfo;
 begin
-  nX := Checker.GetCell.GetCellPos.GetX - To_v.GetCellPos.GetX;
-  nY := Checker.GetCell.GetCellPos.GetY - To_v.GetCellPos.GetY;
-  oY := IfThen(Checker.IsKing, abs(nY), IfThen(Checker.IsWhite, -nY, nY));
-  CanMoveThere := -2;
+  nX := Who.GetCell.GetCellPos.GetX - To_v.GetCellPos.GetX;
+  nY := Who.GetCell.GetCellPos.GetY - To_v.GetCellPos.GetY;
+  oY := IfThen(Who.IsKing, abs(nY), IfThen(Who.IsWhite, -nY, nY));
+  Res.CanMove := false;
   if IsItFree(To_v) then
   begin
-    if (abs(nX) = 1) and (oY = 1) then CanMoveThere := -1
-    else if (abs(nX) = 2) and (abs(nY) = 2) then
+    if (abs(nX) = 1) and (oY = 1) then Res.CanMove := true
+    else if ((abs(nX) = 2) and (abs(nY) = 2)) or (Who.IsKing and (abs(nX) = abs(nY))) then
     begin
-      MiddlePos := To_v.GetCellPos.Sum(Vector2.Create(nX div 2, nY div 2));
-      Middle := self.Board.GetCell(MiddlePos);
-      if (not IsItFree(Middle)) and (self.Board.GetChecker(Middle).IsWhite <> Checker.IsWhite) then
+      for i := 1 to Max(abs(nX), Abs(nY)) - 1 do
       begin
-        CanMoveThere := MiddlePos.GetY * CCellAmount + MiddlePos.GetX;
+        MiddlePos := To_v.GetCellPos.Sum(Vector2.Create(i * abs(nX) div nX, i * abs(nY) div nY));
+        Middle := self.Board.GetCell(MiddlePos);
+        Occupant := self.Board.GetChecker(Middle);
+        Res.CanMove := Who.IsKing;
+        if Occupant <> nil then
+          if (not IsItFree(Middle)) and (Occupant.IsWhite <> Who.IsWhite) then
+          begin
+            SetLength(Res.WhoToEat, IfThen(Length(Res.WhoToEat) < 1, 1, Length(Res.WhoToEat) + 1));
+            Res.WhoToEat[High(Res.WhoToEat)] := Occupant;
+            Res.CanEat := true;
+            Res.CanMove := true;
+          end
+          else if (Length(Res.WhoToEat) > 0) and (Occupant.IsWhite = Who.IsWhite) then
+          begin
+            Res.CanEat := false;
+            Res.CanMove := false;
+            break;
+          end;
       end;
     end;
   end;
+  CanMoveThere := Res;
 end;
 
 function GameInteractor.IsItFree(Cell: BoardCell): Boolean;
@@ -124,19 +145,21 @@ begin
 end;
 
 procedure GameInteractor.HandleEmptyCell(Cell: BoardCell);
-var StatusCode: Integer;
+var StatusCode: MoveInfo; Chkr: Integer;
 begin
   if not assigned(self.SelectedChecker) then exit;
   StatusCode := self.CanMoveThere(self.SelectedChecker, Cell);
-  if StatusCode = -1 then
+  if (StatusCode.CanMove and (not StatusCode.CanEat)) then
   begin
     self.SelectedChecker.MoveTo(Cell);
     self.WhitesTurn := not self.WhitesTurn;
   end
-  else if StatusCode <> -2 then
+  else if (StatusCode.CanMove and StatusCode.CanEat) then
   begin
     self.SelectedChecker.MoveTo(Cell);
-    self.SelectedChecker.Eat(self.Board.GetChecker(self.Board.GetCell(StatusCode)));
+    if StatusCode.CanEat then
+      for Chkr := 0 to High(StatusCode.WhoToEat) do
+        self.SelectedChecker.Eat(StatusCode.WhoToEat[Chkr]);
     self.WhitesTurn := not self.WhitesTurn;
   end;
   self.SelectedGraphics.Visible := false;
